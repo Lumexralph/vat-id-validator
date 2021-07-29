@@ -17,7 +17,7 @@ type VATIDChecker interface {
 	ValidateVATID(ctx context.Context, vatID string) (valid bool, err error)
 }
 
-const GermanVATPrefix = "DE"
+const GermanCountryCode = "DE"
 
 // VATIDValidator is the component that handles validation of
 // our VAT Numbers, caching already validated numbers in an in-memory cache,
@@ -52,7 +52,7 @@ func (v *VATIDValidator) ValidateVATID(ctx context.Context, vatID string) (bool,
 
 	// check the cache, if found, return it.
 	if val, found := v.InMemoryCache.Load(santizedVAT); found {
-		return val == "valid", nil
+		return val == "true", nil
 	}
 
 	if valid := germanVATNumber(vatID); !valid {
@@ -60,7 +60,7 @@ func (v *VATIDValidator) ValidateVATID(ctx context.Context, vatID string) (bool,
 	}
 
 	// validate with the EU/VIES SOAP Service.
-	checkStatus, err := v.euService.CheckVAT(ctx, GermanVATPrefix, santizedVAT)
+	checkStatus, err := v.euService.CheckVAT(ctx, GermanCountryCode, santizedVAT)
 	if err != nil {
 		return false, err
 	}
@@ -68,7 +68,7 @@ func (v *VATIDValidator) ValidateVATID(ctx context.Context, vatID string) (bool,
 	// store in cache.
 	v.InMemoryCache.Store(santizedVAT, checkStatus)
 
-	return checkStatus == "valid", nil
+	return checkStatus == "true", nil
 }
 
 // germanVATNumber checks if the VAT number is a German VAT Number.
@@ -83,7 +83,7 @@ func germanVATNumber(vatID string) (valid bool) {
 		valid = true
 	}
 
-	if len(vatID) == 11 && strings.ToUpper(vatID[:2]) == GermanVATPrefix { // format: DE999999999
+	if len(vatID) == 11 && strings.ToUpper(vatID[:2]) == GermanCountryCode { // format: DE999999999
 		if _, err := strconv.Atoi(vatID[2:]); err != nil {
 			return
 		}
