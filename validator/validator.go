@@ -1,10 +1,12 @@
 package validator
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 // VATIDChecker interface for the actions our validator can perform.
@@ -22,23 +24,34 @@ const GermanVATPrefix = "DE"
 // also interfacing with an external API to validate the numbers.
 type VATIDValidator struct {
 	InMemoryCache sync.Map
-
-	// http client
 	client *http.Client
+	euService *EUVIESService
 }
 
 // NewVATIDValidator creates a new instance of VATIDValidator.
 func NewVATIDValidator() *VATIDValidator {
-	return &VATIDValidator{}
+	client := &http.Client{}
+	return &VATIDValidator{
+		client: client,
+		euService: NewEUVIESService(client),
+	}
 }
 
-func (v *VATIDValidator) ValidateVATID(vatID string) (bool, error) {
+func (v *VATIDValidator) ValidateVATID(ctx context.Context, vatID string) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
 	// sanitize the vatID for whitespace
 	vatID = strings.ReplaceAll(vatID, " ", "")
 	vatID = strings.ToUpper(vatID)
 
+	var santizedVAT string
+	if len(vatID) == 11 {
+		santizedVAT = vatID[2:] // strip off the country code.
+	}
+
 	// check the cache, if found, return it.
-	if val, found := v.InMemoryCache.Load(vatID); found {
+	if val, found := v.InMemoryCache.Load(santizedVAT); found {
 		return val == "valid", nil
 	}
 
@@ -46,7 +59,16 @@ func (v *VATIDValidator) ValidateVATID(vatID string) (bool, error) {
 		return false, nil
 	}
 
-	// make XML request
+	// validate with the EU/VIES SOAP Service.
+	checkStatus, err := v.euService.CheckVAT(ctx, GermanVATPrefix, santizedVAT)
+	if err != nil {
+		return false, err
+	}
+
+	// store in cache.
+	v.InMemoryCache.Store(santizedVAT, checkStatus)
+
+	return checkStatus == "valid", nil
 }
 
 // germanVATNumber checks if the VAT number is a German VAT Number.
