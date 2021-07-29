@@ -14,7 +14,7 @@ import (
 // to separate them into different components or service and also abstract the implementation.
 type VATIDChecker interface {
 	// ValidateVATID receives a VAT ID and return a boolean if it's valid or not.
-	ValidateVATID(vatID string) (valid bool, err error)
+	ValidateVATID(ctx context.Context, vatID string) (valid bool, err error)
 }
 
 const GermanVATPrefix = "DE"
