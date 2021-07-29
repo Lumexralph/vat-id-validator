@@ -4,33 +4,35 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/Lumexralph/vat-id-validator/validator"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
+	"github.com/Lumexralph/vat-id-validator/validator"
 )
 
 const DefaultPort = "3000"
 
-type VATPost struct {
+type vATPost struct {
 	VATNumber string `json:"vat_number"`
 }
 
-type VATPostResponse struct {
+type vATPostResponse struct {
 	Valid bool `json:"valid"`
 }
 
-type Server struct {
+type server struct {
 	vatChecker validator.VATIDChecker
 }
 
-func NewServer(vatChecker validator.VATIDChecker) *Server {
-	return &Server{
+func NewServer(vatChecker validator.VATIDChecker) *server {
+	return &server{
 		vatChecker: vatChecker,
 	}
 }
 
-func (s *Server) Start() error {
+func (s *server) Start() error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", s.indexHandler)
@@ -45,34 +47,37 @@ func (s *Server) Start() error {
 	return http.ListenAndServe(":"+port, mux)
 }
 
-func (s *Server) indexHandler(w http.ResponseWriter, r *http.Request) {
+func (s *server) indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("German VATID Validator Microservice\n"))
 }
 
-func (s *Server) vatIDHandler(w http.ResponseWriter, r *http.Request) {
+func (s *server) vatIDHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "HTTP method not supported", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var post VATPost
-
+	var post vATPost
 	if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// TODO: validate empty request
+	if vat := strings.ReplaceAll(post.VATNumber, " ", ""); vat == "" {
+		http.Error(w, "vat_number not provided", http.StatusBadRequest)
+		return
+	}
 
 	valid, err := s.vatChecker.ValidateVATID(r.Context(), post.VATNumber)
 	if err != nil {
 		log.Printf("error reported: %v\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	log.Println("valid response: ", valid)
 
-	res := VATPostResponse{
-		Valid: valid,
+	validStatus := valid == "true"
+	res := vATPostResponse{
+		Valid: validStatus,
 	}
 
 	output, err := json.Marshal(&res)
@@ -83,7 +88,7 @@ func (s *Server) vatIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	log.Printf("request: %q", post)
+
 	_, err = w.Write(output)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
