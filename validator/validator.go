@@ -38,12 +38,11 @@ func NewVATIDValidator() *vATIDValidator {
 }
 
 // ValidateVATID checks for the validity of the VAT Number to be a valid German VAT,
-// further stores and return checked VATID in the cache.
+// further stores and return checked VAT ID in the cache.
 func (v *vATIDValidator) ValidateVATID(ctx context.Context, vatID string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	// sanitize the vatID for whitespace
 	vatID = strings.ReplaceAll(vatID, " ", "")
 	vatID = strings.ToUpper(vatID)
 
@@ -54,7 +53,12 @@ func (v *vATIDValidator) ValidateVATID(ctx context.Context, vatID string) (strin
 
 	// check the cache, if found, return it.
 	if val, found := v.inMemoryCache.Load(santizedVAT); found {
-		return val.(string), nil
+		result, ok := val.(string) // to avoid panic if the cache is polluted with non-string values.
+		if ok {
+			return result, nil
+		}
+		// remove the polluted VAT ID.
+		v.inMemoryCache.Delete(santizedVAT)
 	}
 
 	if valid := germanVATNumber(vatID); !valid {
