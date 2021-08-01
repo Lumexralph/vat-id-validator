@@ -25,19 +25,20 @@ type checkVATResponse struct {
 // euVIESService the component for the EU/VIES service.
 type euVIESService struct {
 	client *http.Client
+	url string
 }
 
 // NewEUVIESService creates a new instance of the service.
-func NewEUVIESService(client *http.Client) *euVIESService {
+func NewEUVIESService(client *http.Client, url string) *euVIESService {
 	return &euVIESService{
 		client: client,
+		url: url,
 	}
 }
 
 // CheckVAT makes an XML request to https://ec.europa.eu/taxation_customs/vies/services/checkVatService,
 // it returns a string (valid or invalid) and returns an error.
 func (e *euVIESService) CheckVAT(ctx context.Context, countryCode, vatNumber string) (string, error) {
-	url := "https://ec.europa.eu/taxation_customs/vies/services/checkVatService"
 	soapAction := "urn:checkVat"
 	httpMethod := "POST"
 	requestXML := &bytes.Buffer{}
@@ -50,7 +51,7 @@ func (e *euVIESService) CheckVAT(ctx context.Context, countryCode, vatNumber str
 		return "", fmt.Errorf("error creating xml request: %v", err)
 	}
 
-	req, err := http.NewRequest(httpMethod, url, requestXML)
+	req, err := http.NewRequest(httpMethod, e.url, requestXML)
 	if err != nil {
 		log.Printf("error on creating request object: %v\n", err)
 		return "", err

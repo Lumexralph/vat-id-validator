@@ -59,7 +59,7 @@ func (v *vATIDValidator) ValidateVATID(ctx context.Context, vatID string) (strin
 		v.inMemoryCache.Delete(santizedVAT)
 	}
 
-	if valid := germanVATNumber(vatID); !valid {
+	if valid := GermanVATNumber(vatID); !valid {
 		return "false", nil
 	}
 
@@ -69,15 +69,18 @@ func (v *vATIDValidator) ValidateVATID(ctx context.Context, vatID string) (strin
 		return "false", err
 	}
 
+	// in case of error from server, status will be empty.
 	// store in cache.
-	v.inMemoryCache.Store(santizedVAT, checkStatus)
+	if checkStatus != "" {
+		v.inMemoryCache.Store(santizedVAT, checkStatus)
+	}
 
 	return checkStatus, nil
 }
 
-// germanVATNumber checks if the VAT number is a German VAT Number.
+// GermanVATNumber checks if the VAT number is a German VAT Number.
 // assumption is we have a sanitized number in this format DE999999999 or 999999999
-func germanVATNumber(vatID string) (valid bool) {
+func GermanVATNumber(vatID string) (valid bool) {
 	if len(vatID) == 9 { // format: 999999999
 		// check if they are all integers
 		if _, err := strconv.Atoi(vatID); err != nil {
