@@ -25,14 +25,14 @@ type checkVATResponse struct {
 // euVIESService the component for the EU/VIES service.
 type euVIESService struct {
 	client *http.Client
-	url string
+	url    string
 }
 
 // NewEUVIESService creates a new instance of the service.
 func NewEUVIESService(client *http.Client, url string) *euVIESService {
 	return &euVIESService{
 		client: client,
-		url: url,
+		url:    url,
 	}
 }
 
@@ -44,7 +44,7 @@ func (e *euVIESService) CheckVAT(ctx context.Context, countryCode, vatNumber str
 	requestXML := &bytes.Buffer{}
 	postData := &CheckVATPost{
 		CountryCode: countryCode,
-		VATNumber: vatNumber,
+		VATNumber:   vatNumber,
 	}
 
 	if err := Process(checkVatRequestTmpl, postData, requestXML); err != nil {

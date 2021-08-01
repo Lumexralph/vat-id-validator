@@ -23,7 +23,7 @@ func TestProcess(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want   string
+		want    string
 		wantErr bool
 	}{
 		{
@@ -32,7 +32,7 @@ func TestProcess(t *testing.T) {
 				tmpl: checkVatRequestTmpl,
 				data: &CheckVATPost{
 					CountryCode: GermanCountryCode,
-					VATNumber: "123456789",
+					VATNumber:   "123456789",
 				},
 			},
 			want: wantTmpl,

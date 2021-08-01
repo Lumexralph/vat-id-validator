@@ -2,7 +2,6 @@ package validator
 
 import (
 	"context"
-	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,8 +23,7 @@ const GermanCountryCode = "DE"
 // also interfacing with an external API to validate the numbers.
 type vATIDValidator struct {
 	inMemoryCache sync.Map
-	client *http.Client
-	euService EUServiceVATChecker
+	euService     EUServiceVATChecker
 }
 
 // NewVATIDValidator creates a new instance of VATIDValidator.

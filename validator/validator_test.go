@@ -9,16 +9,16 @@ import (
 func Test_GermanVATNumber(t *testing.T) {
 	tests := []struct {
 		name      string
-		vatNumber      string
+		vatNumber string
 		wantValid bool
 	}{
 		{
-			name: "german VAT Number format",
+			name:      "german VAT Number format",
 			vatNumber: "DE302210417",
 			wantValid: true,
 		},
 		{
-			name: "non-german VAT Number format",
+			name:      "non-german VAT Number format",
 			vatNumber: "NL302210417",
 			wantValid: false,
 		},
@@ -37,12 +37,12 @@ func Test_GermanVATNumber(t *testing.T) {
 func Test_vATIDValidator_ValidateVATID(t *testing.T) {
 	tests := []struct {
 		name    string
-		vatID    string
+		vatID   string
 		want    string
 		wantErr bool
 	}{
 		{
-			name: "valid VAT value for test",
+			name:  "valid VAT value for test",
 			vatID: "DE302210417",
 		},
 	}

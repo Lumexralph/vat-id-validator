@@ -49,7 +49,7 @@ func Test_euVIESService_CheckVAT(t *testing.T) {
 			name: "checks a valid VAT",
 			args: args{
 				countryCode: "ES",
-				vatNumber: "100",
+				vatNumber:   "100",
 			},
 			want: "true",
 		},
@@ -57,7 +57,7 @@ func Test_euVIESService_CheckVAT(t *testing.T) {
 			name: "unsuccessful VAT check",
 			args: args{
 				countryCode: "ES",
-				vatNumber: "TESTVATNUMBER",
+				vatNumber:   "TESTVATNUMBER",
 			},
 			want: "",
 		},

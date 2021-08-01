@@ -12,11 +12,11 @@ import (
 	"testing"
 )
 
-type fakeVATChecker struct { }
+type fakeVATChecker struct{}
 
 func (f fakeVATChecker) ValidateVATID(ctx context.Context, vatID string) (valid string, err error) {
 	if vatID == "error" {
-		log.Println("error reached: ", )
+		log.Println("error reached: ")
 		return "false", errors.New(vatID)
 	}
 
@@ -49,7 +49,7 @@ func Test_server_vatIDHandler(t *testing.T) {
 
 	type args struct {
 		contentType, method, vatID string
-		status int
+		status                     int
 	}
 
 	tests := []struct {
@@ -62,9 +62,9 @@ func Test_server_vatIDHandler(t *testing.T) {
 			name: "check a valid VAT request",
 			args: args{
 				contentType: "application/json",
-				method: "POST",
-				vatID: `{"vat_number":"DE302210417"}`,
-				status: http.StatusOK,
+				method:      "POST",
+				vatID:       `{"vat_number":"DE302210417"}`,
+				status:      http.StatusOK,
 			},
 			want: `{"valid":true}`,
 		},
@@ -72,9 +72,9 @@ func Test_server_vatIDHandler(t *testing.T) {
 			name: "check a non-german VAT ID request",
 			args: args{
 				contentType: "application/json",
-				method: "POST",
-				vatID: `{"vat_number":"FM402210417"}`,
-				status: http.StatusOK,
+				method:      "POST",
+				vatID:       `{"vat_number":"FM402210417"}`,
+				status:      http.StatusOK,
 			},
 			want: `{"valid":false}`,
 		},
@@ -82,9 +82,9 @@ func Test_server_vatIDHandler(t *testing.T) {
 			name: "check german VAT ID with wrong method request",
 			args: args{
 				contentType: "application/json",
-				method: "PUT",
-				vatID: `{"vat_number":"FM402210417"}`,
-				status: http.StatusMethodNotAllowed,
+				method:      "PUT",
+				vatID:       `{"vat_number":"FM402210417"}`,
+				status:      http.StatusMethodNotAllowed,
 			},
 			want: "HTTP method not supported\n",
 		},
@@ -92,9 +92,9 @@ func Test_server_vatIDHandler(t *testing.T) {
 			name: "check german VAT ID with wrong content-type request",
 			args: args{
 				contentType: "application/xml",
-				method: "POST",
-				vatID: `{"vat_number":"FM402210417"}`,
-				status: http.StatusBadRequest,
+				method:      "POST",
+				vatID:       `{"vat_number":"FM402210417"}`,
+				status:      http.StatusBadRequest,
 			},
 			want: "content-type: only json is supported\n",
 		},
@@ -102,9 +102,9 @@ func Test_server_vatIDHandler(t *testing.T) {
 			name: "check german VAT ID with empty VAT number request",
 			args: args{
 				contentType: "application/json",
-				method: "POST",
-				vatID: `{"vat_number":""}`,
-				status: http.StatusBadRequest,
+				method:      "POST",
+				vatID:       `{"vat_number":""}`,
+				status:      http.StatusBadRequest,
 			},
 			want: "vat_number not provided\n",
 		},
@@ -112,9 +112,9 @@ func Test_server_vatIDHandler(t *testing.T) {
 			name: "check VAT ID with error from our system",
 			args: args{
 				contentType: "application/json",
-				method: "POST",
-				vatID: `{"vat_number":"error"}`,
-				status: http.StatusInternalServerError,
+				method:      "POST",
+				vatID:       `{"vat_number":"error"}`,
+				status:      http.StatusInternalServerError,
 			},
 			want: "error\n",
 		},

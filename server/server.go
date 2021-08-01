@@ -72,7 +72,7 @@ func (s *server) Start() error {
 // healthHandler helps with health check of the microservice.
 func (s *server) healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("German VATID Validator Microservice\n"))
+	_, _ = w.Write([]byte("German VATID Validator Microservice healthy\n"))
 }
 
 // vatIDHandler handles the validation of the provided supplied VAT ID.
