@@ -3,11 +3,15 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/Lumexralph/vat-id-validator/validator"
 )
@@ -43,8 +47,23 @@ func (s *server) Start() error {
 		port = DefaultPort
 	}
 
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: mux,
+	}
+
+	idleConnsClosed := make(chan struct{})
+	go gracefulServerShutdown(srv, idleConnsClosed)
+
 	log.Printf("Starting server on port:%s... \n", port)
-	return http.ListenAndServe(":"+port, mux)
+	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
+		// Error starting or closing listener:
+		return fmt.Errorf("HTTP server ListenAndServe: %v", err)
+	}
+
+	<-idleConnsClosed
+
+	return nil
 }
 
 func (s *server) indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -93,4 +112,22 @@ func (s *server) vatIDHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func gracefulServerShutdown(srv *http.Server, idleConnsClosed chan struct{}) {
+	defer close(idleConnsClosed)
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+	defer signal.Stop(interrupt)
+
+	<-interrupt
+
+	// We received an interrupt signal, shut down.
+	if err := srv.Shutdown(context.Background()); err != nil {
+		// Error from closing listeners, or context timeout:
+		log.Printf("HTTP server Shutdown: %v", err)
+	}
+
+	log.Println("Server gracefully shutdown")
 }
