@@ -1,4 +1,3 @@
-# Using Cobra as a reference.
 BIN="./vat-id-validator"
 SRC=$(shell find . -name "*.go")
 
@@ -31,7 +30,7 @@ test: lint
 
 docker-build:
 	$(info ******************** building docker image ********************)
-	docker build -t recipe-stats:latest .
+	docker build -t vat-id-validator:latest .
 
 clean:
 	rm -rf $(BIN)
