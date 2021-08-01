@@ -9,6 +9,7 @@ import (
 	"net/http"
 )
 
+// checkVATResponse represents the XML response from the service.
 type checkVATResponse struct {
 	XMLName     xml.Name `xml:"Envelope"`
 	CountryCode string   `xml:"Body>checkVatResponse>countryCode"`
@@ -16,11 +17,12 @@ type checkVATResponse struct {
 	ValidStatus string   `xml:"Body>checkVatResponse>valid"`
 }
 
-
+// euVIESService the component for the EU/VIES service.
 type euVIESService struct {
 	client *http.Client
 }
 
+// NewEUVIESService creates a new instance of the service.
 func NewEUVIESService(client *http.Client) *euVIESService {
 	return &euVIESService{
 		client: client,

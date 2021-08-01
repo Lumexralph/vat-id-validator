@@ -16,6 +16,7 @@ import (
 	"github.com/Lumexralph/vat-id-validator/validator"
 )
 
+// DefaultPort is default port of the server except supplied in the environment.
 const DefaultPort = "3000"
 
 type vATPost struct {
@@ -30,16 +31,18 @@ type server struct {
 	vatChecker validator.VATIDChecker
 }
 
+// NewServer creates a new instance of our server.
 func NewServer(vatChecker validator.VATIDChecker) *server {
 	return &server{
 		vatChecker: vatChecker,
 	}
 }
 
+// Start configures and initializes the server process.
 func (s *server) Start() error {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", s.indexHandler)
+	mux.HandleFunc("/health", s.healthHandler)
 	mux.HandleFunc("/vatid/validate", s.vatIDHandler)
 
 	port := os.Getenv("SERVICE_PORT")
@@ -66,13 +69,21 @@ func (s *server) Start() error {
 	return nil
 }
 
-func (s *server) indexHandler(w http.ResponseWriter, r *http.Request) {
+// healthHandler helps with health check of the microservice.
+func (s *server) healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("German VATID Validator Microservice\n"))
 }
 
+// vatIDHandler handles the validation of the provided supplied VAT ID.
 func (s *server) vatIDHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "HTTP method not supported", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "content-type: only json is supported", http.StatusBadRequest)
 		return
 	}
 
