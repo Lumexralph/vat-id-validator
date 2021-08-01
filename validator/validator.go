@@ -25,15 +25,13 @@ const GermanCountryCode = "DE"
 type vATIDValidator struct {
 	inMemoryCache sync.Map
 	client *http.Client
-	euService *euVIESService
+	euService EUServiceVATChecker
 }
 
 // NewVATIDValidator creates a new instance of VATIDValidator.
-func NewVATIDValidator() *vATIDValidator {
-	client := &http.Client{}
+func NewVATIDValidator(euService EUServiceVATChecker) *vATIDValidator {
 	return &vATIDValidator{
-		client: client,
-		euService: NewEUVIESService(client),
+		euService: euService,
 	}
 }
 

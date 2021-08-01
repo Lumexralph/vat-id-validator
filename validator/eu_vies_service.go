@@ -9,6 +9,11 @@ import (
 	"net/http"
 )
 
+// EUServiceVATChecker represents the interface to call external EU service.
+type EUServiceVATChecker interface {
+	CheckVAT(ctx context.Context, countryCode, vatNumber string) (string, error)
+}
+
 // checkVATResponse represents the XML response from the service.
 type checkVATResponse struct {
 	XMLName     xml.Name `xml:"Envelope"`
