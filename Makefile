@@ -13,7 +13,7 @@ default: all
 all: fmt lint test build
 
 build:
-	$(info ******************** building recipe stats calculator ********************)
+	$(info ******************** building vat id validator service ********************)
 	go build -o vat-id-validator ./cmd
 
 fmt:
