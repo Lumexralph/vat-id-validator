@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/Lumexralph/vat-id-validator/server"
-	"github.com/Lumexralph/vat-id-validator/validator"
 	"log"
 	"net/http"
+
+	"github.com/Lumexralph/vat-id-validator/server"
+	"github.com/Lumexralph/vat-id-validator/validator"
 )
 
 func main() {

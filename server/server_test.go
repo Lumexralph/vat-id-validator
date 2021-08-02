@@ -5,11 +5,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Lumexralph/vat-id-validator/validator"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/Lumexralph/vat-id-validator/validator"
 )
 
 type fakeVATChecker struct{}
